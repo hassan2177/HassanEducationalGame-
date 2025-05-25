@@ -1,0 +1,65 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro; // Required for TextMeshPro
+
+public class CarTriggerHandler : MonoBehaviour
+{
+    private MCQManager MCQManagers; // Reference to the script with the function
+    public Collider col;
+    private bool coltrigger = false;
+    private void Start()
+    {
+        MCQManagers = FindObjectOfType<MCQManager>(); // Find the target script in the scene
+    }
+
+    IEnumerator WaitBeforeNext()
+    {
+
+
+        col.enabled = false;
+
+        Transform parent = col.transform.parent;
+ yield return new WaitForSeconds(0.5f);
+        // Disable all MeshRenderers on parent and children
+        MeshRenderer[] meshRenderers = parent.GetComponentsInChildren<MeshRenderer>();
+        foreach (MeshRenderer renderer in meshRenderers)
+        {
+            renderer.enabled = false;
+        }
+
+        // Disable all TextMeshPro and TextMeshProUGUI components
+        TextMeshPro[] tmpTexts = parent.GetComponentsInChildren<TextMeshPro>();
+        foreach (TextMeshPro tmp in tmpTexts)
+        {
+            tmp.enabled = false;
+        }
+
+        TextMeshProUGUI[] tmpUIs = parent.GetComponentsInChildren<TextMeshProUGUI>();
+        foreach (TextMeshProUGUI tmp in tmpUIs)
+        {
+            tmp.enabled = false;
+        }
+        yield return new WaitForSeconds(5);
+          coltrigger = false;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Car") && gameObject.CompareTag("PytPoints"))
+        {
+            if (MCQManagers != null)
+            {MCQManagers.isMCQActive = true;
+                StartCoroutine(WaitBeforeNext());
+                if (!coltrigger)
+                {coltrigger = true;
+                    MCQManagers.TriggerMCQs(); // Call the function
+                }
+            }
+                else
+                {
+                    Debug.LogWarning("MCQManager not found in the scene!");
+                }
+        }
+    }
+}
