@@ -1,0 +1,135 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
+
+public class WinConditionChecker : MonoBehaviour
+{
+    public GameObject[] objectsToCheck;
+    public TextMeshProUGUI scoreText;
+     public MCQManager mcq;
+    public Animator pauseAnimator;
+    public GameObject EndgameMenuUI;
+    public Button nextlevelButton;
+    public Button retryButton;
+    public Button quitButton;
+    public Button mainMenuButton;
+
+    public TextMeshProUGUI endMessageText;
+
+    private bool gameEnded = false;
+
+
+
+    void Start()
+    {
+        mcq = FindObjectOfType<MCQManager>();
+     EndgameMenuUI.SetActive(false);
+}
+
+    void Update()
+    {
+        if (gameEnded) return;
+
+        bool allCollidersDisabled = true;
+        foreach (GameObject obj in objectsToCheck)
+        {
+            Collider col = obj.GetComponent<Collider>();
+            if (col != null && col.enabled)
+            {
+                allCollidersDisabled = false;
+                break;
+            }
+        }
+
+      
+
+int score = mcq.GetScore();
+        if (allCollidersDisabled && !mcq.isMCQActive)
+        {
+            Debug.Log("=== End Check ===");
+            Debug.Log("allCollidersDisabled: " + allCollidersDisabled);
+            Debug.Log("mcq.isMCQActive: " + mcq.isMCQActive);
+            Debug.Log("Scene Index: " + SceneManager.GetActiveScene().buildIndex);
+            Debug.Log("Score: " + score);
+
+            if (SceneManager.GetActiveScene().buildIndex == 1 && score >= 20 && score <= 40)
+            {
+                ShowEndMenu(true, "You Win!");
+            }
+            else
+            {
+                ShowEndMenu(false, "Level Complete");
+            }
+            if (SceneManager.GetActiveScene().buildIndex == 2 && score >= 20 && score <= 60)
+            {
+                ShowEndMenu(true, "You Win!");
+            }
+            else
+            {
+                ShowEndMenu(false, "Level Complete");
+            }
+                  if (SceneManager.GetActiveScene().buildIndex == 3 && score >= 20 && score <= 80)
+            {
+                ShowEndMenu(true, "You Win!");
+            }
+            else
+            {
+                ShowEndMenu(false, "Level Complete");
+            }
+        }
+
+    }
+
+    void ShowEndMenu(bool showNextLevel, string message)
+    {    pauseAnimator.SetTrigger("open");
+        gameEnded = true;
+
+        if (EndgameMenuUI != null)
+            EndgameMenuUI.SetActive(true);
+
+        if (nextlevelButton != null)
+            nextlevelButton.gameObject.SetActive(showNextLevel);
+
+        if (retryButton != null)
+            retryButton.gameObject.SetActive(true);
+
+        if (quitButton != null)
+            quitButton.gameObject.SetActive(true);
+
+        if (mainMenuButton != null)
+            mainMenuButton.gameObject.SetActive(true);
+
+        if (endMessageText != null)
+            endMessageText.text = message;
+
+        Time.timeScale = 0f;
+    }
+
+    public void RetryLevel()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void LoadMainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(0); // Adjust if your main menu is a different scene index
+    }
+
+    public void LoadNextLevel()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+}
